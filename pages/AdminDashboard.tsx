@@ -1,8 +1,9 @@
 
 import React from 'react';
 import { Event, Ticket, User } from '../types';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
-import { Plus, Users, Calendar, DollarSign, ArrowUpRight, CheckCircle, Package } from 'lucide-react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { Plus, Users, Calendar, DollarSign, ArrowUpRight, CheckCircle, Package, Sparkles } from 'lucide-react';
+import { GoogleGenAI } from "@google/genai";
 
 interface AdminDashboardProps {
   events: Event[];
@@ -15,12 +16,18 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ events, tickets }) => {
   const totalTickets = tickets.length;
   const activeEvents = events.length;
 
-  // Chart data
   const eventData = events.map(e => ({
     name: e.title.substring(0, 10) + '...',
     sold: e.sold,
     revenue: e.sold * e.price
   }));
+
+  const generateAIEvent = async () => {
+    alert("AI generation started... (See implementation for potential automation)");
+    // This is a placeholder for where an admin could call Gemini to draft event descriptions
+    // const ai = new GoogleGenAI({ apiKey: process.env.API_KEY || '' });
+    // ... logic to call gemini-3-pro-preview to draft descriptions ...
+  };
 
   return (
     <div className="container mx-auto px-4 py-12">
@@ -29,13 +36,21 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ events, tickets }) => {
            <h1 className="text-4xl font-black text-white mb-2">Admin Command Center</h1>
            <p className="text-slate-400">Manage Oklahomabashi's events, finances, and community records.</p>
         </div>
-        <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg shadow-emerald-600/20 transition-all">
-          <Plus size={20} />
-          <span>Create Event</span>
-        </button>
+        <div className="flex space-x-3">
+          <button 
+            onClick={generateAIEvent}
+            className="bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 px-6 py-3 rounded-xl font-bold flex items-center space-x-2 transition-all shadow-xl shadow-emerald-500/10"
+          >
+            <Sparkles size={20} />
+            <span>AI Draft Event</span>
+          </button>
+          <button className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-bold flex items-center space-x-2 shadow-lg shadow-emerald-600/20 transition-all">
+            <Plus size={20} />
+            <span>Create Event</span>
+          </button>
+        </div>
       </div>
 
-      {/* Quick Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
         {[
           { label: 'Total Revenue', value: `$${totalRevenue.toLocaleString()}`, icon: DollarSign, color: 'text-emerald-400', bg: 'bg-emerald-500/10' },
@@ -54,7 +69,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ events, tickets }) => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8 mb-12">
-        {/* Sales Chart */}
         <div className="lg:col-span-2 bg-slate-900 border border-white/5 p-8 rounded-[2.5rem]">
            <h2 className="text-xl font-bold text-white mb-8 flex items-center">
              <BarChart className="mr-2 text-emerald-500" size={20} />
@@ -76,7 +90,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ events, tickets }) => {
            </div>
         </div>
 
-        {/* Recent Orders List */}
         <div className="bg-slate-900 border border-white/5 p-8 rounded-[2.5rem]">
            <h2 className="text-xl font-bold text-white mb-8 flex items-center">
              <CheckCircle className="mr-2 text-emerald-500" size={20} />
@@ -104,7 +117,6 @@ const AdminDashboard: React.FC<AdminDashboardProps> = ({ events, tickets }) => {
         </div>
       </div>
 
-      {/* Events Management Table */}
       <div className="bg-slate-900 border border-white/5 rounded-[2.5rem] overflow-hidden">
         <div className="p-8 border-b border-white/5">
            <h2 className="text-xl font-bold text-white">Event Inventory</h2>

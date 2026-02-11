@@ -12,6 +12,7 @@ import Register from './pages/Register';
 import BuyTicket from './pages/BuyTicket';
 import TicketVerification from './pages/TicketVerification';
 import UserDashboard from './pages/UserDashboard';
+import AIChatAssistant from './components/AIChatAssistant';
 import { initialEvents, initialPosts } from './mockData';
 
 const App: React.FC = () => {
@@ -27,7 +28,6 @@ const App: React.FC = () => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as PageType;
       if (hash) {
-        // Handle nested routes like event-details/123
         if (hash.startsWith('event-details/')) {
           const id = hash.split('/')[1];
           setSelectedEventId(id);
@@ -42,7 +42,7 @@ const App: React.FC = () => {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    handleHashChange(); // Initial check
+    handleHashChange();
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
@@ -124,6 +124,7 @@ const App: React.FC = () => {
       <main className="flex-grow pt-16">
         {renderPage()}
       </main>
+      <AIChatAssistant />
       <Footer navigateTo={navigateTo} />
     </div>
   );

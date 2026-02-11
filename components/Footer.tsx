@@ -57,7 +57,7 @@ const Footer: React.FC<FooterProps> = ({ navigateTo }) => {
               </li>
               <li className="flex items-center space-x-3">
                 <Mail size={18} className="text-emerald-500 shrink-0" />
-                <span>info@oklahomabashi.org</span>
+                <span>info@oklahomabashi.com</span>
               </li>
               <li className="flex items-center space-x-3">
                 <Phone size={18} className="text-emerald-500 shrink-0" />

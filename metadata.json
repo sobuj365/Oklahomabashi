@@ -1,0 +1,7 @@
+{
+  "name": "Oklahomabashi - Nonprofit Platform",
+  "description": "A comprehensive platform for the Oklahoma-Bangladeshi community, featuring event ticketing, news, and organizational management.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}

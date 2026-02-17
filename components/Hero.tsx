@@ -20,7 +20,7 @@ const Hero: React.FC<HeroProps> = ({ navigateTo }) => {
         </div>
         
         <h1 className="text-5xl md:text-7xl lg:text-8xl font-black text-white mb-6 tracking-tight leading-[1.1]">
-          Building a <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Brighter</span> Future Together.
+          Oklahomabashi - Where <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-400 to-teal-400">Unity</span> makes the difference.
         </h1>
         
         <p className="text-slate-400 text-lg md:text-xl max-w-2xl mx-auto mb-10 leading-relaxed font-medium">

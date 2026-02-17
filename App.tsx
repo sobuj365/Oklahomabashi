@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { User, UserRole, PageType, Event, BlogPost, Ticket } from './types';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -13,15 +13,35 @@ import BuyTicket from './pages/BuyTicket';
 import TicketVerification from './pages/TicketVerification';
 import UserDashboard from './pages/UserDashboard';
 import AIChatAssistant from './components/AIChatAssistant';
-import { initialEvents, initialPosts } from './mockData';
+import { DataService } from './services/api';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [events, setEvents] = useState<Event[]>(initialEvents);
-  const [posts] = useState<BlogPost[]>(initialPosts);
+  const [events, setEvents] = useState<Event[]>([]);
+  const [posts, setPosts] = useState<BlogPost[]>([]);
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Initialize Data from Service (Database-ready)
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [fetchedEvents, fetchedPosts] = await Promise.all([
+          DataService.getEvents(),
+          DataService.getPosts()
+        ]);
+        setEvents(fetchedEvents);
+        setPosts(fetchedPosts);
+      } catch (error) {
+        console.error("Failed to load initial data:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+    loadData();
+  }, []);
 
   // Simple Hash Routing Logic
   useEffect(() => {
@@ -87,6 +107,14 @@ const App: React.FC = () => {
     alert('Ticket purchased successfully! Redirecting to your dashboard.');
     navigateTo('dashboard');
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   const renderPage = () => {
     switch (currentPage) {

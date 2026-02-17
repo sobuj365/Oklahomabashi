@@ -1,8 +1,7 @@
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState } from 'react';
 import { Ticket as TicketType, Event } from '../types';
-import { QrCode, Search, CheckCircle, XCircle, Camera, ShieldCheck, StopCircle } from 'lucide-react';
-import { Html5Qrcode } from 'html5-qrcode';
+import { QrCode, Search, CheckCircle, XCircle, Camera, ShieldCheck } from 'lucide-react';
 
 interface TicketVerificationProps {
   tickets: TicketType[];
@@ -12,14 +11,9 @@ interface TicketVerificationProps {
 const TicketVerification: React.FC<TicketVerificationProps> = ({ tickets, events }) => {
   const [ticketId, setTicketId] = useState('');
   const [result, setResult] = useState<{ success: boolean; message: string; ticket?: TicketType } | null>(null);
-  const [isScanning, setIsScanning] = useState(false);
-  const scannerRef = useRef<Html5Qrcode | null>(null);
-  const scannerContainerId = "qr-reader";
 
-  const handleVerify = (idToVerify?: string) => {
-    const id = idToVerify || ticketId;
-    const foundTicket = tickets.find(t => t.id === id || t.qrCode === id);
-    
+  const handleVerify = () => {
+    const foundTicket = tickets.find(t => t.id === ticketId);
     if (foundTicket) {
       if (foundTicket.status === 'USED') {
         setResult({ success: false, message: 'Ticket has already been used!', ticket: foundTicket });
@@ -29,60 +23,9 @@ const TicketVerification: React.FC<TicketVerificationProps> = ({ tickets, events
         setResult({ success: true, message: 'Ticket is valid! Verification successful.', ticket: foundTicket });
       }
     } else {
-      setResult({ success: false, message: 'Invalid Ticket. Please check and try again.' });
+      setResult({ success: false, message: 'Invalid Ticket ID. Please check and try again.' });
     }
   };
-
-  const startScanner = async () => {
-    setIsScanning(true);
-    setResult(null);
-    
-    // Slight delay to ensure DOM element is ready
-    setTimeout(async () => {
-      try {
-        const html5QrCode = new Html5Qrcode(scannerContainerId);
-        scannerRef.current = html5QrCode;
-        
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          {
-            fps: 10,
-            qrbox: { width: 250, height: 250 },
-          },
-          (decodedText) => {
-            // Logic for parsing our specific QR format if needed
-            // e.g., OKL-e1-user1-123456789
-            setTicketId(decodedText);
-            handleVerify(decodedText);
-            stopScanner();
-          },
-          (errorMessage) => {
-            // Error callback - usually just means no QR found in frame
-          }
-        );
-      } catch (err) {
-        console.error("Unable to start scanner", err);
-        setIsScanning(false);
-      }
-    }, 100);
-  };
-
-  const stopScanner = async () => {
-    if (scannerRef.current && scannerRef.current.isScanning) {
-      await scannerRef.current.stop();
-      scannerRef.current = null;
-    }
-    setIsScanning(false);
-  };
-
-  // Cleanup scanner on unmount
-  useEffect(() => {
-    return () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop();
-      }
-    };
-  }, []);
 
   const getEventName = (id: string) => events.find(e => e.id === id)?.title || 'Unknown Event';
 
@@ -96,69 +39,38 @@ const TicketVerification: React.FC<TicketVerificationProps> = ({ tickets, events
         <p className="text-slate-400 max-w-lg mx-auto">Admin tool to verify event attendees via unique Ticket ID or QR Code scanning.</p>
       </div>
 
-      <div className="bg-slate-900 border border-white/5 rounded-3xl p-8 shadow-2xl overflow-hidden">
-        {isScanning ? (
-          <div className="space-y-6">
-            <div className="flex items-center justify-between mb-2">
-              <h2 className="text-xl font-bold text-white flex items-center">
-                <Camera className="mr-2 text-emerald-500" size={20} />
-                Scanning QR Code...
-              </h2>
-              <button 
-                onClick={stopScanner}
-                className="text-red-400 hover:text-red-300 flex items-center space-x-2 font-bold text-sm"
-              >
-                <StopCircle size={18} />
-                <span>Cancel</span>
-              </button>
+      <div className="bg-slate-900 border border-white/5 rounded-3xl p-8 shadow-2xl">
+        <div className="flex flex-col md:flex-row gap-6">
+          <div className="flex-grow">
+            <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Manual Entry</label>
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
+              <input 
+                type="text" 
+                placeholder="Enter Ticket ID (e.g. TKT-X1Y2Z3)" 
+                className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono"
+                value={ticketId}
+                onChange={(e) => setTicketId(e.target.value)}
+              />
             </div>
-            
-            <div className="relative rounded-2xl overflow-hidden border-2 border-emerald-500/30 bg-black aspect-square max-w-md mx-auto">
-              <div id={scannerContainerId} className="w-full h-full"></div>
-              <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
-                <div className="w-64 h-64 border-2 border-emerald-500 rounded-2xl opacity-50 animate-pulse"></div>
-              </div>
-            </div>
-            <p className="text-center text-slate-400 text-sm italic">Position the QR code within the frame to scan</p>
           </div>
-        ) : (
-          <>
-            <div className="flex flex-col md:flex-row gap-6">
-              <div className="flex-grow">
-                <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Manual Entry</label>
-                <div className="relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-500" size={20} />
-                  <input 
-                    type="text" 
-                    placeholder="Enter Ticket ID (e.g. TKT-X1Y2Z3)" 
-                    className="w-full bg-slate-950 border border-white/10 rounded-2xl py-4 pl-12 pr-4 text-white focus:outline-none focus:border-emerald-500 transition-colors font-mono"
-                    value={ticketId}
-                    onChange={(e) => setTicketId(e.target.value)}
-                  />
-                </div>
-              </div>
-              <div className="md:w-48">
-                 <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Quick Scan</label>
-                 <button 
-                    onClick={startScanner}
-                    className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-2xl py-4 flex items-center justify-center font-bold space-x-2 transition-all border border-emerald-500/20"
-                 >
-                    <Camera size={20} />
-                    <span>Open Scanner</span>
-                 </button>
-              </div>
-            </div>
+          <div className="md:w-48">
+             <label className="block text-xs font-black text-slate-500 uppercase tracking-[0.2em] mb-3">Quick Scan</label>
+             <button className="w-full bg-slate-800 hover:bg-slate-700 text-white rounded-2xl py-4 flex items-center justify-center font-bold space-x-2 transition-all">
+                <Camera size={20} />
+                <span>Open Scanner</span>
+             </button>
+          </div>
+        </div>
 
-            <button
-              onClick={() => handleVerify()}
-              className="w-full mt-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl py-5 font-black text-lg transition-all shadow-xl shadow-emerald-600/20"
-            >
-              Verify Entry
-            </button>
-          </>
-        )}
+        <button
+          onClick={handleVerify}
+          className="w-full mt-8 bg-emerald-600 hover:bg-emerald-500 text-white rounded-2xl py-5 font-black text-lg transition-all shadow-xl shadow-emerald-600/20"
+        >
+          Verify Entry
+        </button>
 
-        {result && !isScanning && (
+        {result && (
           <div className={`mt-10 p-8 rounded-3xl border-2 animate-in fade-in zoom-in duration-300 ${result.success ? 'bg-emerald-500/5 border-emerald-500/30' : 'bg-red-500/5 border-red-500/30'}`}>
             <div className="flex items-start space-x-4">
               {result.success ? (

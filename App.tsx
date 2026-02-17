@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { User, UserRole, PageType, Event, BlogPost, Ticket } from './types';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -12,42 +12,22 @@ import Register from './pages/Register';
 import BuyTicket from './pages/BuyTicket';
 import TicketVerification from './pages/TicketVerification';
 import UserDashboard from './pages/UserDashboard';
-import AIChatAssistant from './components/AIChatAssistant';
-import { DataService } from './services/api';
+import { initialEvents, initialPosts } from './mockData';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<PageType>('home');
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [events, setEvents] = useState<Event[]>([]);
-  const [posts, setPosts] = useState<BlogPost[]>([]);
+  const [events, setEvents] = useState<Event[]>(initialEvents);
+  const [posts] = useState<BlogPost[]>(initialPosts);
   const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-
-  // Initialize Data from Service (Database-ready)
-  useEffect(() => {
-    const loadData = async () => {
-      try {
-        const [fetchedEvents, fetchedPosts] = await Promise.all([
-          DataService.getEvents(),
-          DataService.getPosts()
-        ]);
-        setEvents(fetchedEvents);
-        setPosts(fetchedPosts);
-      } catch (error) {
-        console.error("Failed to load initial data:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    loadData();
-  }, []);
 
   // Simple Hash Routing Logic
   useEffect(() => {
     const handleHashChange = () => {
       const hash = window.location.hash.replace('#', '') as PageType;
       if (hash) {
+        // Handle nested routes like event-details/123
         if (hash.startsWith('event-details/')) {
           const id = hash.split('/')[1];
           setSelectedEventId(id);
@@ -62,7 +42,7 @@ const App: React.FC = () => {
     };
 
     window.addEventListener('hashchange', handleHashChange);
-    handleHashChange();
+    handleHashChange(); // Initial check
 
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
@@ -108,14 +88,6 @@ const App: React.FC = () => {
     navigateTo('dashboard');
   };
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-12 h-12 border-4 border-emerald-500/20 border-t-emerald-500 rounded-full animate-spin"></div>
-      </div>
-    );
-  }
-
   const renderPage = () => {
     switch (currentPage) {
       case 'home':
@@ -152,7 +124,6 @@ const App: React.FC = () => {
       <main className="flex-grow pt-16">
         {renderPage()}
       </main>
-      <AIChatAssistant />
       <Footer navigateTo={navigateTo} />
     </div>
   );
